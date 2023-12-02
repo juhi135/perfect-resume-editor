@@ -1,5 +1,8 @@
 import streamlit as st
 import os
+import json
+import fitz  # PyMuPDF
+from docx import Document
 
 # Title of the application
 st.title('Perfect Resume Generator')
@@ -31,8 +34,45 @@ if uploaded_file is not None:
 
     st.success("File Saved")
 
-    # Here you would add your logic to render the JSON, edit in Overleaf, or whatever the app is supposed to do
-    # ...
+# Function to process the uploaded file and convert it to JSON
+def process_file_to_json(uploaded_file, file_type):
+    # Process according to file type
+    if file_type == "txt":
+        # Directly read the text content of the file
+        text = uploaded_file.read().decode('utf-8')
+        # Here you would implement parsing logic to convert the plain text into structured JSON
+        structured_data = parse_text_to_json(text)
+
+    elif file_type == "json":
+        # Load the JSON content
+        structured_data = json.load(uploaded_file)
+
+    elif file_type == "pdf":
+        # Open the PDF file
+        with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
+            text = ""
+            for page in doc:
+                text += page.get_text()
+        # Here you would implement parsing logic to convert the plain text into structured JSON
+        structured_data = parse_text_to_json(text)
+
+    elif file_type == "docx":
+        # Load the DOCX content
+        doc = Document(uploaded_file)
+        text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+        # Here you would implement parsing logic to convert the plain text into structured JSON
+        structured_data = parse_text_to_json(text)
+
+    else:
+        raise ValueError("Unsupported file type")
+
+    return structured_data
+
+# Placeholder function for parsing text to JSON
+def parse_text_to_json(text):
+    # Implement text parsing logic here
+    # This is just a placeholder function that returns the text as a JSON object
+    return {"content": text}
 
 # Sidebar for navigation or additional settings
 with st.sidebar:
