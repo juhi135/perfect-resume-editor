@@ -14,6 +14,14 @@ Welcome to PRG! Drop your previous CV below, select one of the templates, and le
 # File uploader allows user to add their own document
 uploaded_file = st.file_uploader("Choose a file", type=['pdf', 'docx', 'txt', 'json'])
 
+options = ["Education", "Skills", "Professional Experience", "Projects"]
+# Create a dropdown to select an option
+selected_option = st.selectbox("Choose an option:", options)
+
+# Display the selected option
+st.write(f"You selected: {selected_option}")
+
+
 if uploaded_file is not None:
     # To read file as string:
     raw_text = uploaded_file.getvalue()

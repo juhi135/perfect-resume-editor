@@ -2,7 +2,7 @@ import json
 
 RESUME = "<RESUME>"
 
-EDUCATION_PROMPT
+EDUCATION_PROMPT = "prompt"
 
 SKILLS_PROMPT
 
