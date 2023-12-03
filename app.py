@@ -36,16 +36,11 @@ if uploaded_file is not None:
 
 # Function to process the uploaded file and convert it to JSON
 def process_file_to_json(uploaded_file, file_type):
-    # Process according to file type
-    if file_type == "txt":
+        # Process according to file type
+    if file_type == "txt" or file_type == "json":
         # Directly read the text content of the file
         text = uploaded_file.read().decode('utf-8')
-        # Here you would implement parsing logic to convert the plain text into structured JSON
         structured_data = parse_text_to_json(text)
-
-    elif file_type == "json":
-        # Load the JSON content
-        structured_data = json.load(uploaded_file)
 
     elif file_type == "pdf":
         # Open the PDF file
@@ -53,20 +48,19 @@ def process_file_to_json(uploaded_file, file_type):
             text = ""
             for page in doc:
                 text += page.get_text()
-        # Here you would implement parsing logic to convert the plain text into structured JSON
         structured_data = parse_text_to_json(text)
 
     elif file_type == "docx":
         # Load the DOCX content
         doc = Document(uploaded_file)
         text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
-        # Here you would implement parsing logic to convert the plain text into structured JSON
         structured_data = parse_text_to_json(text)
 
     else:
         raise ValueError("Unsupported file type")
 
     return structured_data
+
 
 # Placeholder function for parsing text to JSON
 def parse_text_to_json(text):
