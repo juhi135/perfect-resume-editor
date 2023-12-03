@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import json
 import fitz  # PyMuPDF
+import mimetypes
 from docx import Document
 
 # Title of the application
@@ -23,9 +24,42 @@ st.write(f"You selected: {selected_option}")
 
 
 if uploaded_file is not None:
-    # To read file as string:
-    raw_text = uploaded_file.getvalue()
+    # Save the uploaded file to a temporary directory
+    temp_dir = 'tempDir'
+    os.makedirs(temp_dir, exist_ok=True)
+    file_path = os.path.join(temp_dir, uploaded_file.name)
+    
+    with open(file_path, 'wb') as f:
+        f.write(uploaded_file.getvalue())
 
+    # Read file as string
+    try:
+        raw_text = uploaded_file.getvalue().decode('utf-8')  # Specify the appropriate encoding
+
+        # Convert raw text to JSON
+        try:
+            json_data = json.loads(raw_text)
+
+            # Display the JSON data
+            st.subheader("JSON Data from Uploaded File:")
+            st.json(json_data)
+
+            # Display the selected content based on the chosen option
+            if selected_option in json_data:
+                st.subheader(f"{selected_option} Information:")
+                st.write(json_data[selected_option])
+
+            else:
+                st.warning(f"No information found for the selected option: {selected_option}")
+
+        except json.JSONDecodeError:
+            st.error("Error: Unable to parse the uploaded file as JSON.")
+
+    except UnicodeDecodeError:
+        st.error("Error: Unable to decode the uploaded file. Specify the correct encoding.")
+
+    st.success(f"File uploaded and processed successfully: {file_path}")
+    
     # Assuming there is a function to process the uploaded file and generate resume
     # processed_file = process_file(uploaded_file)
     # st.download_button(label="Download Resume", data=processed_file, file_name="resume.pdf", mime='application/octet-stream')
