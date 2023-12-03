@@ -3,7 +3,8 @@ import os
 import json
 import fitz  # PyMuPDF
 import mimetypes
-from docx import Document
+import docx
+from PyPDF2 import PdfReader
 
 # Title of the application
 st.title('Perfect Resume Generator')
@@ -32,34 +33,49 @@ if uploaded_file is not None:
     with open(file_path, 'wb') as f:
         f.write(uploaded_file.getvalue())
 
-    # Read file as string
-    try:
-        raw_text = uploaded_file.getvalue().decode('utf-8')  # Specify the appropriate encoding
+    # Detect file type and decode accordingly
+    file_extension = uploaded_file.name.split('.')[-1].lower()
 
-        # Convert raw text to JSON
-        try:
-            json_data = json.loads(raw_text)
+    if file_extension == 'pdf':
+    # Read the contents of the PDF file
+        with open(file_path, 'rb') as f:
+            pdf_reader = PdfReader(f)
+            pdf_text = ""
+            # Iterate through all pages and extract text
+            for page_num in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_num]
+                pdf_text += page.extract_text()
+        st.subheader("PDF Contents:")
+        print(pdf_text)
+        st.text(pdf_text)
 
-            # Display the JSON data
-            st.subheader("JSON Data from Uploaded File:")
-            st.json(json_data)
+    elif file_extension == 'docx':
+        # Read the contents of the DOCX file
+        doc = docx.Document(file_path)
+        doc_text = ""
+        for paragraph in doc.paragraphs:
+            doc_text += paragraph.text + "\n"
+        st.subheader("DOCX Contents:")
+        st.text(doc_text)
 
-            # Display the selected content based on the chosen option
-            if selected_option in json_data:
-                st.subheader(f"{selected_option} Information:")
-                st.write(json_data[selected_option])
+    elif file_extension == 'txt':
+        # Read the contents of the TXT file
+        with open(file_path, 'r', encoding='utf-8') as f:
+            txt_text = f.read()
+        st.subheader("TXT Contents:")
+        st.text(txt_text)
 
-            else:
-                st.warning(f"No information found for the selected option: {selected_option}")
+    elif file_extension == 'json':
+        # Read the contents of the JSON file
+        with open(file_path, 'r', encoding='utf-8') as f:
+            json_data = json.load(f)
+        st.subheader("JSON Contents:")
+        st.json(json_data)
 
-        except json.JSONDecodeError:
-            st.error("Error: Unable to parse the uploaded file as JSON.")
+    else:
+        st.warning(f"Unsupported file type: {file_extension}")
 
-    except UnicodeDecodeError:
-        st.error("Error: Unable to decode the uploaded file. Specify the correct encoding.")
 
-    st.success(f"File uploaded and processed successfully: {file_path}")
-    
     # Assuming there is a function to process the uploaded file and generate resume
     # processed_file = process_file(uploaded_file)
     # st.download_button(label="Download Resume", data=processed_file, file_name="resume.pdf", mime='application/octet-stream')
