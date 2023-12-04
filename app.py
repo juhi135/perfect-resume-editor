@@ -6,6 +6,63 @@ import mimetypes
 import docx
 from PyPDF2 import PdfReader
 
+
+def process_pdf_to_str(file_path):
+    with open(file_path, 'rb') as f:
+            pdf_reader = PdfReader(f)
+            pdf_text = ""
+            # Iterate through all pages and extract text
+            for page_num in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_num]
+                pdf_text += page.extract_text()
+    return pdf_text
+
+def process_docs_to_str(file_path):
+    doc = docx.Document(file_path)
+    doc_text = ""
+    for paragraph in doc.paragraphs:
+        doc_text += paragraph.text + "\n"
+    return doc_text
+
+# Function to process the uploaded file and convert it to JSON
+def process_file_to_str(uploaded_file):
+    temp_dir = 'tempDir'
+    os.makedirs(temp_dir, exist_ok=True)
+    file_path = os.path.join(temp_dir, uploaded_file.name)
+    
+    with open(file_path, 'wb') as f:
+        f.write(uploaded_file.getvalue())
+
+    # Detect file type and decode accordingly
+    file_extension = uploaded_file.name.split('.')[-1].lower()
+
+    found_text = ""
+
+    if file_extension == 'pdf':
+    # Read the contents of the PDF file
+        found_text=process_pdf_to_str(file_path)
+
+    elif file_extension == 'docx':
+        # Read the contents of the DOCX file
+        found_text=process_docs_to_str(file_path)
+
+    elif file_extension == 'txt':
+        # Read the contents of the TXT file
+        with open(file_path, 'r', encoding='utf-8') as f:
+            txt_text = f.read()
+        found_text=txt_text
+
+    elif file_extension == 'json':
+        # Read the contents of the JSON file
+        with open(file_path, 'r', encoding='utf-8') as f:
+            json_data = json.load(f)
+            found_text=json.dumps(json_data)
+    else:
+        st.warning(f"Unsupported file type: {file_extension}")
+
+    return found_text
+
+
 # Title of the application
 st.title('Perfect Resume Generator')
 
@@ -23,58 +80,9 @@ selected_option = st.selectbox("Choose an option:", options)
 # Display the selected option
 st.write(f"You selected: {selected_option}")
 
-
 if uploaded_file is not None:
     # Save the uploaded file to a temporary directory
-    temp_dir = 'tempDir'
-    os.makedirs(temp_dir, exist_ok=True)
-    file_path = os.path.join(temp_dir, uploaded_file.name)
-    
-    with open(file_path, 'wb') as f:
-        f.write(uploaded_file.getvalue())
-
-    # Detect file type and decode accordingly
-    file_extension = uploaded_file.name.split('.')[-1].lower()
-
-    if file_extension == 'pdf':
-    # Read the contents of the PDF file
-        with open(file_path, 'rb') as f:
-            pdf_reader = PdfReader(f)
-            pdf_text = ""
-            # Iterate through all pages and extract text
-            for page_num in range(len(pdf_reader.pages)):
-                page = pdf_reader.pages[page_num]
-                pdf_text += page.extract_text()
-        st.subheader("PDF Contents:")
-        print(pdf_text)
-        st.text(pdf_text)
-
-    elif file_extension == 'docx':
-        # Read the contents of the DOCX file
-        doc = docx.Document(file_path)
-        doc_text = ""
-        for paragraph in doc.paragraphs:
-            doc_text += paragraph.text + "\n"
-        st.subheader("DOCX Contents:")
-        st.text(doc_text)
-
-    elif file_extension == 'txt':
-        # Read the contents of the TXT file
-        with open(file_path, 'r', encoding='utf-8') as f:
-            txt_text = f.read()
-        st.subheader("TXT Contents:")
-        st.text(txt_text)
-
-    elif file_extension == 'json':
-        # Read the contents of the JSON file
-        with open(file_path, 'r', encoding='utf-8') as f:
-            json_data = json.load(f)
-        st.subheader("JSON Contents:")
-        st.json(json_data)
-
-    else:
-        st.warning(f"Unsupported file type: {file_extension}")
-
+    new_text = process_file_to_str(uploaded_file)
 
     # Assuming there is a function to process the uploaded file and generate resume
     # processed_file = process_file(uploaded_file)
@@ -92,32 +100,7 @@ if uploaded_file is not None:
 
     st.success("File Saved")
 
-# Function to process the uploaded file and convert it to JSON
-def process_file_to_json(uploaded_file, file_type):
-        # Process according to file type
-    if file_type == "txt" or file_type == "json":
-        # Directly read the text content of the file
-        text = uploaded_file.read().decode('utf-8')
-        structured_data = parse_text_to_json(text)
 
-    elif file_type == "pdf":
-        # Open the PDF file
-        with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
-            text = ""
-            for page in doc:
-                text += page.get_text()
-        structured_data = parse_text_to_json(text)
-
-    elif file_type == "docx":
-        # Load the DOCX content
-        doc = Document(uploaded_file)
-        text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
-        structured_data = parse_text_to_json(text)
-
-    else:
-        raise ValueError("Unsupported file type")
-
-    return structured_data
 
 
 # Placeholder function for parsing text to JSON
