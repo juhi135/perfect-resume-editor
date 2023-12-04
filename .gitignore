@@ -1,2 +1,3 @@
 # Ignore temporary files
 tempDir/
+__pycache__/
