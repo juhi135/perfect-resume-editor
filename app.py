@@ -5,9 +5,11 @@ import fitz  # PyMuPDF
 import mimetypes
 import docx
 from PyPDF2 import PdfReader
+from prompt_engineering import engineering_prompt
 
 
 def process_pdf_to_str(file_path):
+    """ Convert pdf input to string """
     with open(file_path, 'rb') as f:
             pdf_reader = PdfReader(f)
             pdf_text = ""
@@ -18,6 +20,7 @@ def process_pdf_to_str(file_path):
     return pdf_text
 
 def process_docs_to_str(file_path):
+    """ Convert docs inputs to string """
     doc = docx.Document(file_path)
     doc_text = ""
     for paragraph in doc.paragraphs:
@@ -26,6 +29,7 @@ def process_docs_to_str(file_path):
 
 # Function to process the uploaded file and convert it to JSON
 def process_file_to_str(uploaded_file):
+    """ Takes in the uploaded file and returns a string """
     temp_dir = 'tempDir'
     os.makedirs(temp_dir, exist_ok=True)
     file_path = os.path.join(temp_dir, uploaded_file.name)
@@ -73,16 +77,25 @@ Welcome to PRG! Drop your previous CV below, select one of the templates, and le
 # File uploader allows user to add their own document
 uploaded_file = st.file_uploader("Choose a file", type=['pdf', 'docx', 'txt', 'json'])
 
-options = ["Education", "Skills", "Professional Experience", "Projects"]
+sections = ["Education", "Skills", "Professional Experience", "Projects"]
 # Create a dropdown to select an option
-selected_option = st.selectbox("Choose an option:", options)
+selected_section = st.selectbox("Choose an option:", sections)
 
 # Display the selected option
-st.write(f"You selected: {selected_option}")
+st.write(f"You selected: {selected_section}")
+
+#Add job description 
+job_description = st.text_area(label="Job Description", height=200)
+
+# Save the job description to a variable
+if st.button("Submit Job Description"):
+    job_description = job_description.strip()  # Remove leading and trailing whitespace
+    if job_description:
+        st.write("Job description saved successfully!")
 
 if uploaded_file is not None:
     # Save the uploaded file to a temporary directory
-    new_text = process_file_to_str(uploaded_file)
+    resume = process_file_to_str(uploaded_file)
 
     # Assuming there is a function to process the uploaded file and generate resume
     # processed_file = process_file(uploaded_file)
@@ -99,6 +112,10 @@ if uploaded_file is not None:
         f.write(uploaded_file.getbuffer())
 
     st.success("File Saved")
+
+    prompt = engineering_prompt(resume, job_description, selected_section)
+    print(prompt)
+    # send new_text through prompt_engineering
 
 
 
