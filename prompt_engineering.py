@@ -19,4 +19,4 @@ def engineering_prompt(resume, job_description, section):
     pass
   # add more sections here
 
-  return prompt
+  return prompt # SHOULD BE JSON

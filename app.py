@@ -7,6 +7,10 @@ import docx
 from PyPDF2 import PdfReader
 from prompt_engineering import engineering_prompt
 
+import requests
+
+API_TOKEN = "INSERT_API_TOKEN"
+
 
 def process_pdf_to_str(file_path):
     """ Convert pdf input to string """
@@ -115,10 +119,6 @@ if uploaded_file is not None:
 
     prompt = engineering_prompt(resume, job_description, selected_section)
     print(prompt)
-    # send new_text through prompt_engineering
-
-
-
 
 # Placeholder function for parsing text to JSON
 def parse_text_to_json(text):
@@ -135,9 +135,18 @@ with st.sidebar:
     # - FAQ
     # - Template Gallery
 
-    # For demonstration, just a simple button
+    # When clicked will generate new resume section
     if st.button('Render JSON Resume'):
+        API_URL = "https://api-inference.huggingface.co/models/gpt2"
+        headers = {"Authorization": f"Bearer {API_TOKEN}"}
         st.sidebar.write("Render JSON Resume clicked")
+        def query(payload):
+            response = requests.post(API_URL, headers=headers, json=payload)
+            return response.json()
+        data = query(prompt)
+        st.sidebar.write("Generated resume: \n"+data)
+
+
 
 # ... more app logic ...
 
