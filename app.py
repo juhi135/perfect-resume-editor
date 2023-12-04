@@ -6,6 +6,7 @@ import mimetypes
 import docx
 from PyPDF2 import PdfReader
 from prompt_engineering import engineering_prompt
+import re
 
 import requests
 
@@ -71,6 +72,9 @@ def process_file_to_str(uploaded_file):
     return found_text
 
 
+def parse_text_to_json(text):
+    return json.dumps(text)
+
 # Title of the application
 st.title('Perfect Resume Generator')
 
@@ -116,15 +120,9 @@ if uploaded_file is not None:
         f.write(uploaded_file.getbuffer())
 
     st.success("File Saved")
+    print(parse_text_to_json(resume))
+    
 
-    prompt = engineering_prompt(resume, job_description, selected_section)
-    print(prompt)
-
-# Placeholder function for parsing text to JSON
-def parse_text_to_json(text):
-    # Implement text parsing logic here
-    # This is just a placeholder function that returns the text as a JSON object
-    return {"content": text}
 
 # Sidebar for navigation or additional settings
 with st.sidebar:
@@ -137,6 +135,8 @@ with st.sidebar:
 
     # When clicked will generate new resume section
     if st.button('Render JSON Resume'):
+        prompt = engineering_prompt(resume, job_description, selected_section)
+        print(prompt)
         API_URL = "https://api-inference.huggingface.co/models/gpt2"
         headers = {"Authorization": f"Bearer {API_TOKEN}"}
         st.sidebar.write("Render JSON Resume clicked")
@@ -144,6 +144,8 @@ with st.sidebar:
             response = requests.post(API_URL, headers=headers, json=payload)
             return response.json()
         data = query(prompt)
+        # parse data object to get query response then can index into the dictionary
+        print(data)
         st.sidebar.write("Generated resume: \n"+data)
 
 
