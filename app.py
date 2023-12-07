@@ -6,11 +6,13 @@ import mimetypes
 import docx
 from PyPDF2 import PdfReader
 from prompt_engineering import engineering_prompt
-import re
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import requests
 
-API_TOKEN = "INSERT_API_TOKEN"
+# need to run pip install transformers==4.20  
+
+API_TOKEN = "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"
 
 
 def process_pdf_to_str(file_path):
@@ -120,9 +122,6 @@ if uploaded_file is not None:
         f.write(uploaded_file.getbuffer())
 
     st.success("File Saved")
-    print(parse_text_to_json(resume))
-    
-
 
 # Sidebar for navigation or additional settings
 with st.sidebar:
@@ -137,17 +136,27 @@ with st.sidebar:
     if st.button('Render JSON Resume'):
         prompt = engineering_prompt(resume, job_description, selected_section)
         print(prompt)
-        API_URL = "https://api-inference.huggingface.co/models/gpt2"
-        headers = {"Authorization": f"Bearer {API_TOKEN}"}
-        st.sidebar.write("Render JSON Resume clicked")
-        def query(payload):
-            response = requests.post(API_URL, headers=headers, json=payload)
-            return response.json()
-        data = query(prompt)
-        # parse data object to get query response then can index into the dictionary
-        print(data)
-        st.sidebar.write("Generated resume: \n"+data)
 
+        # Model and tokenizer
+        model_name = "gpt2-medium"
+        model = AutoModelForCausalLM.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+        # Prompt
+        prompt = "Generate a resume for a software developer who can code in C++"
+
+        # Encode the prompt
+        encoded_prompt = tokenizer(prompt, return_tensors="pt")
+
+        # Generate text
+        generated_text = model.generate(**encoded_prompt, max_length=100, max_new_tokens=100)
+
+        # Decode the generated text
+        decoded_text = tokenizer.decode(generated_text[0])
+
+        print(f"Question: {prompt}")
+        print(f"Answer: {decoded_text}")
+        
 
 
 # ... more app logic ...
