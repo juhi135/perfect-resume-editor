@@ -12,9 +12,6 @@ import requests
 
 # need to run pip install transformers==4.20  
 
-API_TOKEN = "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"
-
-
 def process_pdf_to_str(file_path):
     """ Convert pdf input to string """
     with open(file_path, 'rb') as f:
