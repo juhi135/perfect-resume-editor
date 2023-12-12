@@ -12,12 +12,17 @@ def engineering_prompt(resume, job_description, section):
   if section == "Education":
     prompt += "Write an Education section that includes the degree type, B.S., M.S. as well as the university, the years they attended, and the location of that university" 
   elif section == "Skills":
-    prompt += "Edit the skills section to more closely match this job section: " + section 
+    prompt += "Edit the skills section to more closely match this job description: " + job_description
   elif section == "Professional Experience":
-    prompt += "Edit the professional experience to align more closely with this job description" + section + " using the STAR method" 
+    prompt += "Edit the professional experience to align more closely with this job description" + job_description + " using the STAR method" 
   elif section == "Projects":
-    prompt += "Edit the project descriptions to match the responsibilities of the job section more closely"
-  # add more sections here
+    prompt += "Edit the project descriptions to match the responsibilities of the job section more closely. Where the job description is: " + job_description
 
   #check 1024 word count ?
-  return prompt # SHOULD BE JSON
+  words = prompt.split()
+  # Take the first max_words words
+  truncated_words = words[:1000]
+  # Join the words back into a string
+  truncated_prompt = ' '.join(truncated_words)
+
+  return truncated_prompt
