@@ -8,7 +8,7 @@ def engineering_prompt(resume, job_description, section):
         - university/college 
         - location 
         - Degree and Degree type 
-        - start - end date:
+        - start - end date
         - GPA if included
 
         To best match this job description:
