@@ -6,6 +6,7 @@ import mimetypes
 import docx
 from PyPDF2 import PdfReader
 from prompt_engineering import engineering_prompt
+from openai import OpenAI
 import openai
 
 import requests
@@ -125,23 +126,6 @@ if uploaded_file is not None:
 
     # st.success("File Saved")
 
-# Check if OpenAI API key is set as an environment variable
-if "OPENAI_API_KEY" not in os.environ:
-    # Display a message and input field for user to enter their key
-    st.info("OpenAI API key not found. Please enter your key:")
-    api_key = st.text_input("OpenAI API Key:")
-
-    # Check if the user submitted a key
-    if api_key:
-        # Set the environment variable with the provided key
-        os.environ["OPENAI_API_KEY"] = api_key
-        st.success("OpenAI API key set.")
-    else:
-        # Stop execution if no key is provided
-        st.error("Please enter a valid OpenAI API key.")
-        st.stop()
-
-openai.api_key = os.environ["OPENAI_API_KEY"]
 
 # Sidebar for navigation or additional settings
 with st.sidebar:
@@ -151,24 +135,41 @@ with st.sidebar:
     # - Edit LaTeX on Overleaf
     # - FAQ
     # - Template Gallery
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        api_key = st.text_input(
+            "Enter your OpenAI API Key: [(click here to obtain a new key if you do not have one)](https://platform.openai.com/account/api-keys)",
+            type="password",
+    )
+        
+    
 
     # When clicked will generate new resume section
     if st.button('Render JSON Resume'):
         job_description = job_description_area.strip()
         prompt = engineering_prompt(resume_section, job_description, selected_section)
-        print("Prompt: "+ prompt)
+        client = OpenAI(api_key=api_key)
 
-        # Function to generate resume section
-        def generate_resume_section(prompt):
-            response = openai.Completion.create(
+        role = """You are a resume generator who takes in a resume, a section, and
+        a job description for a computer science role and produces a resume section tailored
+        to the job description provided"""
+
+        try:
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
-                prompt=prompt,
-                temperature=0.4, # higher values like 0.8 make the output mode random, range 0-2
+                messages=[
+                    {"role": "system", "content": role},
+                    {"role": "user", "content": prompt},
+                ],
             )
-            return response["choices"][0]["text"]
+
+            answer = response.choices[0].message.content
+            st.write("This is the generated resume section: "+ answer)
+        except Exception as e:
+            print(e)
+            print("Failed to tailor resume.")
         
-        answer = generate_resume_section(prompt)
-        st.write("This is the generated resume section: "+ answer)
+        
         
         
 
