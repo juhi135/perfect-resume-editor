@@ -1,10 +1,10 @@
 
 def engineering_prompt(resume, job_description, section):
   """ Produce a prompt for an LLM to generate a resume section that matches the given job description"""
-  prompt = "Given the following resume: " + resume 
+  prompt = "Temorary prompt"
   if section == "Education":
     prompt = """
-        Given the following resume"""+ resume + """. Generate an education section in the format
+        Given the following resume: """+ resume + """. Generate an education section in the format
         university/college: 
         location: 
         Degree and Degree type: 
@@ -16,7 +16,7 @@ def engineering_prompt(resume, job_description, section):
 
   elif section == "Skills":
     prompt = """
-        Given the following resume""" + resume + """. Generate a skills section in the which are
+        Given the following resume: """ + resume + """. Generate a skills section in the which are
         most relevant according to the job description: """ + job_description + """. Don't add 
         skills which are not in the resume, pick skills from the work experience in the
         resume section as well as from the projects. Focus on a top few set of skills.
@@ -25,7 +25,7 @@ def engineering_prompt(resume, job_description, section):
 
   elif section == "Professional Experience":
     prompt = """
-        Given the following resume"""+ resume + """. Generate a Professional experience section that
+        Given the following resume: """+ resume + """. Generate a Professional experience section that
         includes the experiences of the resume in the format
         company:
         position:
@@ -40,7 +40,7 @@ def engineering_prompt(resume, job_description, section):
 
   elif section == "Projects":
     prompt = """
-      Given the following resume""" + resume + """. Generate a Projects section in the following format
+      Given the following resume: """ + resume + """. Generate a Projects section in the following format
       Project Name:
       Project start and end date:
       explanation:
